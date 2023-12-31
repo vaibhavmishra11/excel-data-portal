@@ -20,5 +20,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/remove-download',[ClientController::class,'removeDuplicates'])->middleware('auth');;
+Route::post('/remove-download',[ClientController::class,'removeDuplicates'])->middleware('auth');
 Route::post('/save-data', [ClientController::class,'saveData']);
+Route::get('/fetch-data',[ClientController::class,'fetchClientData'])->middleware('auth');

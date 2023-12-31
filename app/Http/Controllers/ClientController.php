@@ -6,6 +6,7 @@ use App\Exports\ClientExport;
 use App\Imports\ClientImport;
 use App\Jobs\ProcessClientDataJob;
 use App\Mail\DuplicateRemovedNotification;
+use App\Mail\SaveClientDataMail;
 use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -63,11 +64,11 @@ class ClientController extends Controller
             return response()->json(['error' => 'Error during import: ' . $e->getMessage()], 422);
         }
     }
-    private function sendDuplicateRemovedNotification($importSummary)
+    private function sendImportDataNotification($importSummary)
     {
         $user = Auth::user();
 
-        Mail::to($user->email)->send(new DuplicateRemovedNotification($importSummary));
+        Mail::to($user->email)->send(new SaveClientDataMail($importSummary));
 
     }
 
@@ -84,7 +85,7 @@ class ClientController extends Controller
             // Dispatch the job to process the Excel file in the background
             ProcessClientDataJob::dispatch($file);
             $importSummary = session('import_summary', []);
-            $this->sendDuplicateRemovedNotification($importSummary);
+            $this->sendImportDataNotification($importSummary);
 
             Log::debug(request()->all());
 
@@ -94,6 +95,20 @@ class ClientController extends Controller
         }
     }
 
-}
+    public function fetchClientData(Request $request)
+    {
+        try {
+            Log::debug(request()->all());
+            $perPage = $request->perPage ?? 10; 
+            $clients = Client::orderBy($request->sortBy, $request->desc == 'true' ? 'desc' : 'asc')->paginate($perPage);
+    
 
+            return response()->json($clients);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error in Fetching Client Data' . $e->getMessage()], 422);
+
+        }
+
+    }
+}
 

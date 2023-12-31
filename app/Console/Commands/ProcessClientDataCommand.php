@@ -6,7 +6,7 @@ use App\Jobs\ProcessClientDataJob;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Bus;
 
-class ProcessClientData extends Command
+class ProcessClientDataCommand extends Command
 {
     protected $signature = 'excel:process {file}';
     protected $description = 'Process Excel file in the background';

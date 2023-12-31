@@ -7,7 +7,7 @@
 
       <v-btn color="info" class="mr-4 mt-2" @click="removeDuplicateAndDownload" :disabled=disable>Remove Duplicates and
         Download</v-btn>
-      <v-btn color="info" class="mt-2" :disabled=saveDisable @click="saveData">Save Data</v-btn>
+      <v-btn color="info" class="mt-2" @click="fetchClientData">Save Data</v-btn>
     </v-row>
 
     <!--fiters -->
@@ -42,8 +42,23 @@
     </v-row>
 
     <!-- Data table -->
-    <v-data-table-server v-model:items-per-page="itemsPerPage" :headers="headers" :items-length="serverItems.length"
-      :items="serverItems" :loading="loading" :items-per-page-options="[5, 10, 15, 20, -1]"></v-data-table-server>
+    <v-data-table-server v-model:items-per-page="itemsPerPage" 
+        :headers="headers" 
+        :items-length="clientData.length"
+        :items="clientData" 
+        :loading="loading" 
+        @update:page="handlePageUpdate"
+        @update:items-per-page="handlePerPageUpdate"
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
+        @update:sort-by="handleSortByUpdate"
+        @update:sort-desc="handleSortDescUpdate"
+        :items-per-page-options="[5, 10, 15, 20, -1]">
+      <template #item.index="{ index }">
+        {{ index + 1 }}
+      </template>
+
+    </v-data-table-server>
   </v-container>
 </template>
   
@@ -59,36 +74,27 @@ export default {
       file: null,
       disable: true,
       saveDisable: true,
-
-      serverItems: [
-        {
-          index: 1,
-          first_name: "vaibhav",
-          last_name: "Mishra",
-          email: "user1@example.com",
-          uploader: "vaibhav",
-          uploaded_on: "2023-01-01",
-        },
-        {
-          index: 2,
-          first_name: "harsh",
-          last_name: "singh",
-          email: "harsh@example.com",
-          uploader: "harsh",
-          uploaded_on: "2023-01-02",
-        },
-      ],
+      clientData: [],
+      page:1,
+      perPage:5,
+      sortBy: ["created_at"],
+      sortDesc: true,
       itemsPerPage: 5,
       currentPage: 1,
+
       headers: [
-        { title: "S.No", key: "index", sortable: true },
+        { title: "S.No", key: "index", sortable: false},
         { title: "First Name", key: "first_name", sortable: true },
         { title: "Last Name", key: "last_name", sortable: true },
         { title: "Email", key: "email", sortable: true },
         { title: "Uploader", key: "uploader", sortable: true },
-        { title: "Uploaded On", key: "uploaded_on", sortable: true },
+        { title: "Uploaded On", key: "created_at", sortable: true },
       ],
     };
+  },
+  mounted() {
+    this.fetchClientData();
+
   },
 
   methods: {
@@ -186,11 +192,42 @@ export default {
     },
 
     clearSearch() {
-      console.log("serav");
       this.email = "";
       this.date = "";
       this.uploader = "";
       this.fetchData();
+    },
+
+    async fetchClientData(sortBy) {
+      try {
+        // const { data } = await axios.get("/api/fetch-data");
+        const { data } = await axios.get(`/api/fetch-data?page=${this.page}&perPage=${this.perPage}&desc=${this.sortDesc}&sortBy=${this.sortBy}`);
+        console.log(data);
+        this.clientData = data.data;
+      } catch (error) {
+        console.error("Error in fetching data", error);
+
+      }
+    },
+    handlePageUpdate(page) {
+      this.page = page;
+      this.fetchClientData();
+    },
+    handlePerPageUpdate(perPage) {
+      this.perPage = perPage;
+      this.fetchClientData();
+    },
+    handleSortByUpdate(sortBy) {
+      console.log(sortBy);
+      this.sortBy = [sortBy[0].key];
+      
+      this.fetchClientData();
+    },
+    handleSortDescUpdate(sortDesc) {
+      console.log(sortDesc);
+      this.sortDesc= [sortBy[0].order];
+      
+      this.fetchClientData();
     },
   },
 };

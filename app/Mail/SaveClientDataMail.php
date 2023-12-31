@@ -3,10 +3,13 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class DuplicateRemovedNotification extends Mailable
+class SaveClientDataMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -30,8 +33,8 @@ class DuplicateRemovedNotification extends Mailable
      */
     public function build()
 {
-    return $this->subject('Duplicate Clients Removed')
-                ->view('emails.duplicate_removed_notification')
+    return $this->subject('Import Client Data Successfully')
+                ->view('emails.save-client-data')
                 ->with(['importSummary' => $this->importSummary]);
 }
 }

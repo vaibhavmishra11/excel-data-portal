@@ -5,6 +5,7 @@ import vuetify from "./vuetify";
 
 
 
+
 const app = createApp({});
 
 import ExampleComponent from './components/ExampleComponent.vue';
